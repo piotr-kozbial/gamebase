@@ -1,17 +1,13 @@
-(ns gamebase.server
+(ns gamebase.base_server
   (:require [clojure.string :as str]
             [clojure.java.io :as io]
             [compojure.core :refer [GET POST routes]]
             [compojure.route :refer [resources]]
             [ring.util.response :refer [response]]
             [ring.util.request :refer [body-string]]
-            [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
-            ;; [ring.middleware.gzip :refer [wrap-gzip]]
-            [ring.middleware.logger :refer [wrap-with-logger]]
             [com.stuartsierra.component :as component]
             [system.components.endpoint :refer [new-endpoint]]
             [system.components.handler :refer [new-handler]]
-            [system.components.middleware :refer [new-middleware]]
             [system.components.jetty :refer [new-web-server]]))
 
 (comment ;; example usage

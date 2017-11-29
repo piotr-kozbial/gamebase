@@ -14,66 +14,73 @@
             [system.components.middleware :refer [new-middleware]]
             [system.components.jetty :refer [new-web-server]]))
 
-(defn is->str [is]
-  (let [rdr (clojure.java.io/reader is)]
-    (slurp rdr)))
+(comment ;; example usage
 
-(defn home-routes [root-page message-handler]
+  (defn message-handler [msg]
+    {:dostalem msg})
+
+  (def conf {:host "127.0.0.1"
+             :http-port 10555
+             :root-page "index.html"
+             :message-handler #'message-handler
+             :exception-handler (fn [req ex] {:blad (str ex)})})
+
+  (start-server conf)
+
+  ;; test with:
+  ;;
+  ;; $ curl 127.0.0.1:10555
+  ;; $ curl -d '{:a 1, :b 2, :text "Jasio was here!"}' 127.0.0.1:10555
+
+  )
+
+(defn home-routes [root-page message-handler
+                   exception-handler]
   (fn [_]
     (routes
      (GET "/" _
-          (-> root-page ;; "public/index.html"
+          (-> root-page
               io/resource
               io/input-stream
               response
-              (assoc :headers {"Content-Type" "text/html; charset=utf-8"})))
-
+              (assoc :headers
+                     {"Content-Type"
+                      "text/html; charset=utf-8"})))
      (POST "/" req
            (try
-             ;; (println (is->str (:body req)))
-             ;; "ok"
              (->> req
-                  (:body)
-                  (is->str)
+                  (body-string)
                   (read-string)
                   (message-handler)
                   (pr-str))
-
-             ))
-
+             (catch Throwable ex
+               (println ex)
+               (pr-str (exception-handler req ex)))))
      (resources "/"))))
 
 (defn app-system [config]
   (component/system-map
-   :routes     (new-endpoint (home-routes (:root-page config)
-                                          (:message-handler config)))
-   :middleware (new-middleware {:middleware (:middleware config)})
+   :routes     (new-endpoint
+                (home-routes
+                 (or (:root-page config) "index.html")
+                 (or (:message-handler config)
+                     (fn [msg] {:received msg}))
+                 (or (:exception-handler config)
+                     (fn [req ex] {:error (str ex)}))))
+   :middleware (new-middleware {:middleware []})
    :handler    (-> (new-handler)
                    (component/using [:routes :middleware]))
-   :http       (-> (new-web-server (:http-port config) nil {:host (:host config)})
+   :http       (-> (new-web-server
+                    (or (:http-port config) 10555)
+                    nil
+                    {:host (or (:host config) "127.0.0.1")})
                    (component/using [:handler]))))
 
-(comment ;; example config
-  (def conf {:host "127.0.0.1"
-             :http-port 10555
-             :root-page "public/index.html"
-             :message-handler (fn [msg] {:dostalem msg})})
-
-  (start-server conf)
-
-  )
-
 (defn start-server [config]
-  (let [config'
-        (merge config
-               {:middleware [
-                             [wrap-defaults api-defaults]
-                             ;; wrap-body-string
-                             wrap-with-logger
-                             ;; wrap-gzip
-                             ]})])
   (-> config
       app-system
       component/start)
   (println "Started server on "
-           (str "http://" (:host config) ":" (:http-port config))))
+           (str "http://" (:host config)
+                ":" (:http-port config))))
+

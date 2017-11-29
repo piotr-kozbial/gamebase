@@ -8,6 +8,6 @@
                  [compojure "1.6.0"]
                  [com.stuartsierra/component "0.3.2"]
                  [org.danielsz/system "0.4.0"]]
-  :main ^:skip-aot gamebase.core
+  ;; :main ^:skip-aot gamebase.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

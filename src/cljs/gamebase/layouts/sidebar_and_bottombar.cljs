@@ -1,5 +1,6 @@
 (ns gamebase.layouts.sidebar-and-bottombar
-  (:require [makstycoon.globevents :as gevents]))
+  (:require
+   [goog.events :as events]))
 
 ;; TODO:
 ;;  - the layout must also control canvas itself, resize it etc.
@@ -96,7 +97,6 @@
     ))
 
 (defn -setup-events [layout]
-  (swap!
-   gevents/resize-handlers
-   conj
+  (events/listen
+   js/window "resize"
    #(update-canvas-size layout)))

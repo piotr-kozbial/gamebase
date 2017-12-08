@@ -32,7 +32,16 @@
              ;; biblioteke, w ktora sie to wepnie
              "function setup() { makstycoon.core.setup(); }\n"
              "function draw() { makstycoon.core.draw(); }\n"
-             ;; TODO: a te moze w ogole niepotrzebne,
-             ;; wepnie sie w konkretne elementy, a nie globalnie?
-             "function mouseDragged() {makstycoon.globevents.mouseDragged(); return false;}\n"
-             "function mousePressed() {makstycoon.globevents.mousePressed(); return false;}\n"]]]))))
+
+             "function mousePressed() { gamebase.events.canvasMousePressed(); return false; }\n"
+             "function mouseMoved() { gamebase.events.canvasMouseMoved(); return false; }\n"
+             "function mouseDragged() { gamebase.events.canvasMouseDragged(); return false; }\n"
+             "function mouseReleased() { gamebase.events.canvasMouseReleased(); return false; }\n"
+             "function mouseClicked() { gamebase.events.canvasMouseClicked(); return false; }\n"
+             "function mouseScrolled() { gamebase.events.canvasMouseScrolled(); return false; }\n"
+
+             ]]]))))
+
+
+
+

@@ -5,7 +5,8 @@
 (defn mk-root-page [& options]
 
   (let [{:keys [app-js p5-js
-                custom-html]}
+                custom-html
+                main]}
         (apply hash-map options)]
 
     (str "\n\n\n\n\n"
@@ -28,10 +29,9 @@
             [:script {:src app-js :type "text/javascript"}]
 
             [:script
-             ;; TODO: te makstycoon. wywalic, zrobic nasz
-             ;; biblioteke, w ktora sie to wepnie
-             "function setup() { makstycoon.core.setup(); }\n"
-             "function draw() { makstycoon.core.draw(); }\n"
+             (str "function setup() { " main "(); }\n")
+
+             "function draw()          { gamebase.events.callback(\"draw\"); }\n"
 
              "function mousePressed()  { gamebase.events.callback(\"canvas-mouse-pressed\");  return false; }\n"
              "function mouseMoved()    { gamebase.events.callback(\"canvas-mouse-moved\");    return false; }\n"
@@ -39,5 +39,6 @@
              "function mouseReleased() { gamebase.events.callback(\"canvas-mouse-released\"); return false; }\n"
              "function mouseClicked()  { gamebase.events.callback(\"canvas-mouse-clicked\");  return false; }\n"
              "function mouseScrolled() { gamebase.events.callback(\"canvas-mouse-scrolled\"); return false; }\n"
-             "function windowResized() { gamebase.events.callback(\"window-resized\"); return false; }\n"]]]))))
+             "function windowResized() { gamebase.events.callback(\"window-resized\"); return false; }\n"
+             ]]]))))
 

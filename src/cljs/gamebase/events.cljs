@@ -17,6 +17,8 @@
 
 ;;-------------------------------------------------------------------
 
+(defmethod data-for-event :draw [_]
+  {})
 (defmethod data-for-event :canvas-mouse-pressed [_]
   {:button js/mouseButton
    :x js/mouseX
@@ -55,6 +57,7 @@
   (and (<= 0 js/pmouseX) (< js/pmouseX js/width)
        (<= 0 js/pmouseY) (< js/pmouseY js/height)))
 
+(defmethod precondition-for-event :draw [_] (mouseInCanvas))
 (defmethod precondition-for-event :canvas-mouse-pressed [_] (mouseInCanvas))
 (defmethod precondition-for-event :canvas-mouse-moved [_] (mouseInCanvas))
 (defmethod precondition-for-event :canvas-mouse-dragged [_] (and (mouseInCanvas) (pmouseInCanvas)))

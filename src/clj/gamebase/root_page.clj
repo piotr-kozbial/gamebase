@@ -33,16 +33,11 @@
              "function setup() { makstycoon.core.setup(); }\n"
              "function draw() { makstycoon.core.draw(); }\n"
 
-             "function mousePressed() { gamebase.events.canvasMousePressed(); return false; }\n"
-             "function mouseMoved() { gamebase.events.canvasMouseMoved(); return false; }\n"
-             "function mouseDragged() { gamebase.events.canvasMouseDragged(); return false; }\n"
-             "function mouseReleased() { gamebase.events.canvasMouseReleased(); return false; }\n"
-             "function mouseClicked() { gamebase.events.canvasMouseClicked(); return false; }\n"
-             "function mouseScrolled() { gamebase.events.canvasMouseScrolled(); return false; }\n"
-
-             "function windowResized() { gamebase.events.windowResized(); return false; }\n"
-             ]]]))))
-
-
-
+             "function mousePressed()  { gamebase.events.callback(\"canvas-mouse-pressed\");  return false; }\n"
+             "function mouseMoved()    { gamebase.events.callback(\"canvas-mouse-moved\");    return false; }\n"
+             "function mouseDragged()  { gamebase.events.callback(\"canvas-mouse-dragged\");  return false; }\n"
+             "function mouseReleased() { gamebase.events.callback(\"canvas-mouse-released\"); return false; }\n"
+             "function mouseClicked()  { gamebase.events.callback(\"canvas-mouse-clicked\");  return false; }\n"
+             "function mouseScrolled() { gamebase.events.callback(\"canvas-mouse-scrolled\"); return false; }\n"
+             "function windowResized() { gamebase.events.callback(\"window-resized\"); return false; }\n"]]]))))
 

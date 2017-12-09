@@ -97,5 +97,5 @@
     ))
 
 (defn -setup-events [layout]
-  (events/setOnWindowResized
+  (events/add-handler :window-resized ;;setOnWindowResized
    (fn [_] (update-canvas-size layout))))

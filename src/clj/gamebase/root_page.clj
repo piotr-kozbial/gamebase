@@ -40,6 +40,7 @@
              "function mouseClicked() { gamebase.events.canvasMouseClicked(); return false; }\n"
              "function mouseScrolled() { gamebase.events.canvasMouseScrolled(); return false; }\n"
 
+             "function windowResized() { gamebase.events.windowResized(); return false; }\n"
              ]]]))))
 
 

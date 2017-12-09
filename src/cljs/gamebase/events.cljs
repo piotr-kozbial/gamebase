@@ -1,7 +1,8 @@
 (ns gamebase.events)
 
 (declare canvasOnMousePressed canvasOnMouseMoved canvasOnMouseDragged
-         canvasOnMouseReleased canvasOnMouseClicked canvasOnMouseScrolled)
+         canvasOnMouseReleased canvasOnMouseClicked canvasOnMouseScrolled
+         onWindowResized)
 
 ;; API
 
@@ -12,6 +13,8 @@
 (defn setCanvasOnMouseClicked [handler]  (reset! canvasOnMouseClicked handler))
 (defn setCanvasOnMouseScrolled [handler] (reset! canvasOnMouseScrolled handler))
 
+(defn setOnWindowResized [handler] (reset! onWindowResized handler))
+
 ;; PRIVATE
 
 (def canvasOnMousePressed (atom (fn [_])))
@@ -21,34 +24,42 @@
 (def canvasOnMouseClicked (atom (fn [_])))
 (def canvasOnMouseScrolled (atom (fn [_])))
 
-UWAGA! JEdnak musze recznie sprawdzac, czy te eventy sa w canvasie.
-Moze nie ma sensu w ten sposob - moze zwykle HTML-owe eventy na obiekcie canvas? Czy wtedy drag bedzie
-tak samo dobrze opisany?
+(def onWindowResized (atom (fn [_])))
 
-No dobra, ale to w miare latwo sprawdzic, bo sa zmienne w p5:
+;; TODO: I tak samo keyPressed, keyReleased, keyTyped, - eventy, a takze funkcja keyIsDown(key)
 
-js/mouseX, js/mouseY - pozycja myszki WZGLEDEM CANVASU
-js/pmouseX, js/pmouseY - poprzednia pozycja myszki WZGLEDEM CANVASU
-js/width, js/height - wymiary CANVASU
+;; TODO: Trzeba chyba zrobic jednak cale listy handlerow dla kazdego eventu. Zeby np. user mogl uzywac onWindowResized,
+;;       chociaz nasze layouty musza. Tu by tylko trzeba zapewnic, ze user bedzie na koncu... hmmm...
 
-Btw. jest tez do zdefiniowania windowResized(); - event w index.html - to bysmy nie musieli juz goog.events uzywac
-I tak samo keyPressed, keyReleased, keyTyped, - eventy, a takze funkcja keyIsDown(key)
+;; TODO: Jednak glupio to wszystko kopiowac, zrobmy generyczne funkcje:
+;;  (addHandler [event handler])  - i tutaj event to bedzie np. :mouse-pressed, :window-resized itd.
+;; (addHandler, nie setHandler, bo chcemy miec listy)
 
-UZYC TEGO!!!
+(defn- mouseInCanvas []
+  (and (<= 0 js/mouseX) (< js/mouseX js/width)
+       (<= 0 js/mouseY) (< js/mouseY js/height)))
 
-
+(defn- pmouseInCanvas []
+  (and (<= 0 js/pmouseX) (< js/pmouseX js/width)
+       (<= 0 js/pmouseY) (< js/pmouseY js/height)))
 
 (defn ^:export canvasMousePressed [])
 (defn ^:export canvasMouseMoved [])
 (defn ^:export canvasMouseDragged []
-  (@canvasOnMouseDragged {:button js/mouseButton
-                    :x js/mouseX
-                    :y js/mouseY
-                    :prev-x js/pmouseX
-                    :prev-y js/pmouseY}))
+  (when (and (mouseInCanvas) (pmouseInCanvas))
+    (@canvasOnMouseDragged {:button js/mouseButton
+                            :x js/mouseX
+                            :y js/mouseY
+                            :prev-x js/pmouseX
+                            :prev-y js/pmouseY})))
 (defn ^:export canvasMouseReleased [])
 (defn ^:export canvasMouseClicked []
-  (@canvasOnMouseClicked {:button js/mouseButton
-                          :x js/mouseX
-                          :y js/mouseY}))
+  (when (mouseInCanvas)
+    (@canvasOnMouseClicked {:button js/mouseButton
+                            :x js/mouseX
+                            :y js/mouseY})))
 (defn ^:export canvasMouseScrolled [])
+
+
+(defn ^:export windowResized []
+  (@onWindowResized {}))

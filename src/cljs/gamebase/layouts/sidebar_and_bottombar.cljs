@@ -1,6 +1,6 @@
 (ns gamebase.layouts.sidebar-and-bottombar
   (:require
-   [goog.events :as events]))
+   [gamebase.events :as events]))
 
 ;; TODO:
 ;;  - the layout must also control canvas itself, resize it etc.
@@ -97,6 +97,5 @@
     ))
 
 (defn -setup-events [layout]
-  (events/listen
-   js/window "resize"
-   #(update-canvas-size layout)))
+  (events/setOnWindowResized
+   (fn [_] (update-canvas-size layout))))

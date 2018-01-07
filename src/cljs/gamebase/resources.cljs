@@ -2,7 +2,6 @@
 
   (:require
    [gamebase.tmx :as tmx]
-   [makstycoon.util.layout :as layout]
    [clojure.string :as str]
 
    ;; [goog.dom :as gdom]

@@ -14,6 +14,52 @@
 ;; }
 
 
+
+nil
+
+;; COS CO BYLO W makstycoon.util.draw:
+;;
+;; (defn canvas-xy-to-world-xy [geometry [canvas-x canvas-y]]
+;;   (let [{:keys [top-left-x top-left-y magnif tile-height height-in-tiles]} geometry]
+;;     [(+ (/ canvas-x magnif) top-left-x)
+;;      (- (* tile-height height-in-tiles)
+;;         (+ (/ canvas-y magnif) top-left-y))]))
+;; (defn world-xy-to-tile-xy [geometry [x y]]
+;;   (let [{:keys [tile-width tile-height]} geometry]
+;;     [(js/floor (/ x tile-width))
+;;      (js/floor (/ y tile-height))]))
+;; (defn world-xy-to-scaled-canvas-xy [geometry [x y]]
+;;   ;; we assume that the output will be scaled,
+;;   ;; so we only need to account for translation
+;;   (let [{:keys [top-left-x top-left-y height-in-tiles tile-height]} geometry]
+;;     [(- x top-left-x)
+;;      (- (- (* tile-height height-in-tiles) y) top-left-y)]))
+;; (defn -line [geometry p1 p2]
+;;   (let [[cx1 cy1] (world-xy-to-scaled-canvas-xy geometry p1)
+;;         [cx2 cy2] (world-xy-to-scaled-canvas-xy geometry p2)]
+;;     (js/line cx1 cy1 cx2 cy2)))
+;; (defn get-tile-corners [geometry [tile-x tile-y]]
+;;   (let [{:keys [tile-width tile-height]} geometry]
+;;     [[(* tile-x tile-width) (* tile-y tile-height)]
+;;      [(* (inc tile-x) tile-width) (* tile-y tile-height)]
+;;      [(* (inc tile-x) tile-width) (* (inc tile-y) tile-height)]
+;;      [(* tile-x tile-width) (* (inc tile-y) tile-height)]]))
+;; (defn -tile-box [geometry [tile-x tile-y]]
+;;   (let [{:keys [tile-height tile-width]} geometry
+;;         [p0 p1 p2 p3] (get-tile-corners geometry [tile-x tile-y])]
+;;     (-line geometry p0 p1)
+;;     (-line geometry p1 p2)
+;;     (-line geometry p2 p3)
+;;     (-line geometry p3 p0)))
+;; (defn -tile-rect [geometry [tile-x tile-y]]
+;;   (let [{:keys [tile-height tile-width]} geometry
+;;         [p0 _ p2 _] (get-tile-corners geometry [tile-x tile-y])
+;;         [cx0 cy0] (world-xy-to-scaled-canvas-xy geometry p0)
+;;         [cx2 cy2] (world-xy-to-scaled-canvas-xy geometry p2)]
+;;     (js/rect cx0 cy0 (- cx2 cx0) (- cy2 cy0))))
+
+
+
 (defonce selected-point (atom [0 0]))
 (def g (atom nil))
 

@@ -5,6 +5,14 @@
 (defn add-handler [event-key handler]
   (swap! all-handlers update-in [event-key] #(conj (or % []) handler)))
 
+(def canvas-events-on? (atom true))
+
+(defn stop-canvas-events []
+  (reset! canvas-events-on? false))
+
+(defn resume-canvas-events []
+  (reset! canvas-events-on? true))
+
 (defmulti data-for-event (fn [event-key] event-key))
 (defmulti precondition-for-event (fn [event-key] event-key))
 
@@ -58,10 +66,10 @@
        (<= 0 js/pmouseY) (< js/pmouseY js/height)))
 
 (defmethod precondition-for-event :draw [_] true)
-(defmethod precondition-for-event :canvas-mouse-pressed [_] (mouseInCanvas))
-(defmethod precondition-for-event :canvas-mouse-moved [_] (mouseInCanvas))
-(defmethod precondition-for-event :canvas-mouse-dragged [_] (and (mouseInCanvas) (pmouseInCanvas)))
-(defmethod precondition-for-event :canvas-mouse-released [_] (mouseInCanvas))
-(defmethod precondition-for-event :canvas-mouse-clicked [_] (mouseInCanvas))
-(defmethod precondition-for-event :canvas-mouse-scrolled [_] (mouseInCanvas))
+(defmethod precondition-for-event :canvas-mouse-pressed [_] (and @canvas-events-on? (mouseInCanvas)))
+(defmethod precondition-for-event :canvas-mouse-moved [_] (and @canvas-events-on? (mouseInCanvas)))
+(defmethod precondition-for-event :canvas-mouse-dragged [_] (and @canvas-events-on? (mouseInCanvas) (pmouseInCanvas)))
+(defmethod precondition-for-event :canvas-mouse-released [_] (and @canvas-events-on? (mouseInCanvas)))
+(defmethod precondition-for-event :canvas-mouse-clicked [_] (and @canvas-events-on? (mouseInCanvas)))
+(defmethod precondition-for-event :canvas-mouse-scrolled [_] (and @canvas-events-on? (mouseInCanvas)))
 (defmethod precondition-for-event :window-resized [_] true)

@@ -1,8 +1,10 @@
 (defproject gamebase "0.1.1-SNAPSHOT"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojurescript "1.9.908" :scope "provided"]
                  [ring "1.6.2"]
+                 [org.clojure/data.xml "0.2.0-alpha2"]
                  [ring/ring-defaults "0.3.1"]
                  [radicalzephyr/ring.middleware.logger "0.6.0"]
                  [compojure "1.6.0"]

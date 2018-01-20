@@ -1,4 +1,5 @@
-(ns gamebase.draw)
+(ns gamebase.draw
+  (:require [gamebase.ecs :as ecs]))
 
 ;; Pytanie - czy wyglad sprite'a to nie powinien byc jakis system
 ;; (w sensie entity-component-system)? To nie tyle, ze samo rysowanie,
@@ -8,24 +9,30 @@
 ;; - tutaj bierzemy (textures nil), a powinna byc jakas current-texture
 ;; - width/height - to dot. tekstury? jesli tak, to moze w samej teksturze powinno byc
 (defn draw-sprite [{:keys [reset-transformation get-image]}
-                   {:keys [tile-x tile-y textures current-texture
-                           local-x local-y
-                           angle
-                           width height
-                           center-x center-y]}]
-  (reset-transformation)
+                   sprite0
+                   ]
 
-  (let [texture (get-image (textures current-texture))
-        tile-left (* 32 tile-x)
-        tile-bottom (* 32 (- 100 tile-y))]
-    (js/translate
-     (+ tile-left local-x)
-     (+ tile-bottom (- local-y)))
-    (js/angleMode js/DEGREES)
-    (js/rotate (- angle))
-    (js/image texture
-              (- center-x) (- center-y) width height
-              0 0 width height)))
+  (let [
+        {:keys [tile-x tile-y textures current-texture
+                local-x local-y
+                angle
+                width height
+                center-x center-y]} (:locomotive (::ecs/components sprite0))
+
+        ]
+    (reset-transformation)
+
+    (let [texture (get-image (textures current-texture))
+          tile-left (* 32 tile-x)
+          tile-bottom (* 32 (- 100 tile-y))]
+      (js/translate
+       (+ tile-left local-x)
+       (+ tile-bottom (- local-y)))
+      (js/angleMode js/DEGREES)
+      (js/rotate (- angle))
+      (js/image texture
+                (- center-x) (- center-y) width height
+                0 0 width height))))
 
 ;; Btw. zamiast img powinno byc nazwa (czy jakies id) resource'a z tile'ami,
 ;; a poza tym tiles-img i tile-offs powinny byc w strukturze layera.

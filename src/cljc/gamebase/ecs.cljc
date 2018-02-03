@@ -1,77 +1,139 @@
-(ns gamebase.ecs)
+(ns gamebase.ecs
+  (:require [schema.core :as s :include-macros true]))
 
-;; Entity-Component System common definitions
+;; helpers
+(defn s-literal [v]
+  (s/pred #(= % v)))
+;; /helpers
 
+(def sTarget
+  (s/conditional
+   #(= (::kind %) :to-world)
+   ,   {s/Any s/Any}
+   #(= (::kind %) :to-system)
+   ,   {::system-id s/Any
+        s/Any s/Any}
+   #(= (::kind %) :to-entity)
+   ,   {::entity-id s/Any
+        s/Any s/Any}
+   #(= (::kind %) :to-component)
+   ,   {::entity-id s/Any
+        ::component-key s/Any
+        s/Any s/Any}))
 
-(defmulti component-handle-event
-  (fn [sprite-id
-      system-id
-      component-id
-      component                                       ;; komponent, ktory przerabiamy
-       related-components ;; TODO: to beda inne komponenty z tego sprite'a,
-       ;; read-only, wedlug recepty (wiring)
-       total-time                         ;; read-only
-       world                              ;; read-only
-      event]
-    [system-id (:type component)]))
+(def sComponent
+  {::kind (s-literal :component)
+   ::system-id s/Any
+   ::entity-id s/Any
+   ::component-key s/Any
+   s/Any s/Any})
 
+(def sEntity
+  {::kind (s-literal :entity)
+   ::entity-id s/Any
+   ::components {s/Any sComponent}
+   s/Any s/Any})
 
+(def sSystem
+  {::kind (s-literal :system)
+   ::system-id s/Any
+   s/Any s/Any})
 
-;; TODO
-(defn- handle-event-in-sprite [system-key sprite total-time world event]
+(def sWorld
+  {::kind (s-literal :world)
+   ::systems {s/Any sSystem}
+   ::entities {s/Any sEntity}
+   s/Any s/Any})
 
+(def sObject
+  (s/conditional
+   #(= (::kind %) :world) sWorld
+   #(= (::kind %) :system) sSystem
+   #(= (::kind %) :entity) sEntity
+   #(= (::kind %) :component) sComponent))
 
-  ;; TODO - handle multiple component per system
+(comment ; examples
+  ;; sWorld
+  (s/validate sWorld {::kind :world
+                      ::systems {}
+                      ::entities {}})
 
-  (if-let [component ((::components sprite) system-key)]
-    (let [component' (component-handle-event
-                      (:id sprite)
-                      system-key
-                      nil
-                      component
-                      nil
-                      total-time
-                      world
-                      event)
-          sprite' (assoc-in sprite [::components system-key] component')]
-      (assoc-in world [:sprites (:id sprite)] sprite'))
-    world)
+  ;; sSystem
+  (s/validate sSystem {::kind :system
+                       ::system-id "my system"})
 
+  ;; sEntity
+  (s/validate sEntity {::kind :entity
+                       ::entity-id 10
+                       ::components {}})
+
+  ;; sComponent
+  (s/validate sComponent {::kind :component
+                          ::entity-id 10
+                          ::component-key "comp1"
+                          ::system-id "my system"})
 
   )
 
 
-(defn default-handle-event [{:keys [system-key handle-system-event]}
-                            total-time world event]
-  (let [target-id (:target-id event)]
-    (case target-id
-      ::system
-      (handle-system-event total-time world event)
-
-      ::broadcast
-      (reduce
-       (fn [w id]
-         (handle-event-in-sprite system-key ((:sprites w) id) total-time w event))
-       world
-       (sort (keys (:sprites world))))
-
-      ;; otherwise: specific sprite event
-      (let [sprite ((:sprites world) target-id)]
-        (handle-event-in-sprite system-key sprite total-time world event)))))
 
 
 
-;; IDEAS
+;; ;;;;; Spec helpers
 
-;; - moze jednak wygodniej od razu component-handle-event dispatchowac tez na (:msg event),
-;;   bo zobacz jak to niemilo w makstycoon.systems.locomotive.loco, a wszedzie tak bedzie
+;; (def anything (constantly true))
 
-;; - sprite-id, ::broadcast, ::system - to sa rozne "targety" eventow
-;;   Moze jeszcze dodac component-id, czyli wlasciwie wektor [sprite-id system-id component-id],
-;;   a jezeli w spricie jest tylko jeden komponent danego systemu, to mozna [sprite-id system-id]
+;; ;;;;; Objects
 
-;;   No i tez rozne funkcje, ktore tam biora sprite-id system-id component-id, niech moze biora "target", czy cos
+;; (s/def ::system-id anything)
+;; (s/def ::entity-id anything)
+;; (s/def ::component-id anything)
 
-;; - moze jednak spec na cos tu?
+;; (s/def ::kind keyword?)
 
-;; - jak juz mam duzo w cljc, to latwiej testowac
+;; (defmulti object-spec ::kind)
+;; (s/def ::object (s/multi-spec object-spec ::kind))
+;; (defmethod object-spec :world [_]
+;;   (s/keys :req [::kind ::systems ::entities]))
+;; (defmethod object-spec :system [_]
+;;   (s/keys :req [::kind ::system-id]))
+;; (defmethod object-spec :entity [_]
+;;   (s/keys :req [::kind ::entity-id ::components]))
+;; (defmethod object-spec :component [_]
+;;   (s/keys :req [::kind ::component-id ::entity-id ::system-id]))
+
+;; (s/def ::system (s/and ::object #(= (::kind %) :system)))
+;; (s/def ::systems (s/map-of ::system-id ::system))
+
+;; (s/def ::entity (s/and ::object #(= (::kind %) :entity)))
+;; (s/def ::entities (s/map-of ::entity-id ::entity))
+
+;; (s/def ::component (s/and ::object #(= (::kind %) :component)))
+;; (s/def ::components (s/map-of ::component-id ::component))
+
+;; ;;;;; Target identification for an event
+
+;; (defmulti target-id-spec ::kind)
+;; (s/def ::target-id (s/multi-spec target-id-spec ::kind))
+;; (defmethod target-id-spec :to-system [_]
+;;   (s/keys :req [::system-id]))
+;; (defmethod target-id-spec :to-entity [_]
+;;   (s/keys :req [::entity-id]))
+;; (defmethod target-id-spec :to-component [_]
+;;   (s/keys :req [::entity-id ::component-id]))
+
+;; ;;;;; Event handling
+;; ;; RETURN VALUE may be an updated object or a collection of objects, including world etc.
+;; ;; Everything will be inserted under appropriate id's
+
+;; (defmulti handle-event
+;;   (fn [target-id event total-time world object]
+;;     (case (::kind target-id)
+;;       ;; these instances to be defined by given system
+;;       :to-system [:to-system (::system-id target-id) (::msg event)]
+;;       ;; these instances to be defined next to entity constructor
+;;       :to-entity [:to-entity (::type object) (::msg event)]
+;;       ;; these instances to be defined by system to which component belongs
+;;       :to-component [:to-component (::type object) (::msg event)])))
+
+

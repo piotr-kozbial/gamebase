@@ -72,9 +72,79 @@
 
 ;; (s/set-fn-validation! true)
 
-(do ;; event handling
+(do ;; event handling : targets
 
-  (deftest aaa
-    (ecs/call-handle-event {::ecs/kind :to-world} :e :tt :w :o))
+  (def world1
+    {::ecs/kind :world
+     ::ecs/systems
+     {"my system" {::ecs/kind :system
+                   ::ecs/system-id "my system"}}
+     ::ecs/entities
+     {1 {::ecs/kind :entity
+         ::ecs/entity-id 1
+         ::ecs/type ::one-kind
+         ::ecs/components {}}
+      2 {::ecs/kind :entity
+         ::ecs/entity-id 2
+         ::ecs/type ::another-kind
+         ::ecs/components
+         {"comp1" {::ecs/kind :component
+                   ::ecs/type ::component-a
+                   ::ecs/system-id "my system"
+                   ::ecs/entity-id 2
+                   ::ecs/component-key "comp1"}}}}})
 
-  )
+  (defmethod ecs/handle-event [:to-world ::test-event-to-world]
+    [_ _ _ world _]
+    (assoc world :a :b))
+
+  (defmethod ecs/handle-event [:to-system "my system" ::test-event-to-system]
+    [_ _ _ world _]
+    (assoc world :a :sys))
+
+  (defmethod ecs/handle-event [:to-entity ::one-kind ::test-event-to-entity]
+    [_ _ _ world _]
+    (assoc world :a :E))
+
+  (defmethod ecs/handle-event [:to-component ::component-a ::test-event-to-comp]
+    [_ _ _ world _]
+    (assoc world :a "comp"))
+
+  (deftest to-world
+    (is (= (ecs/do-handle-event {::ecs/kind :to-world}
+                                {::ecs/msg ::test-event-to-world}
+                                0
+                                world1)
+           (assoc world1 :a :b))))
+
+  (deftest to-system
+    (is (= (ecs/do-handle-event {::ecs/kind :to-system
+                                 ::ecs/system-id "my system"}
+                                {::ecs/msg ::test-event-to-system}
+                                0
+                                world1)
+           (assoc world1 :a :sys))))
+
+  (deftest to-entity
+    (is (= (ecs/do-handle-event {::ecs/kind :to-entity
+                                 ::ecs/entity-id 1}
+                                {::ecs/msg ::test-event-to-entity}
+                                0
+                                world1)
+           (assoc world1 :a :E))))
+
+  (deftest to-component
+    (is (= (ecs/do-handle-event {::ecs/kind :to-component
+                                 ::ecs/entity-id 2
+                                 ::ecs/component-id "comp1"}
+                                {::ecs/msg ::test-event-to-comp}
+                                0
+                                world1)
+           (assoc world1 :a "comp")))))
+
+
+
+;; TODO
+(do ;; event handling : returns
+  ;; TODO
+)

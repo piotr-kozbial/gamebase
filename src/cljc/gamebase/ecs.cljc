@@ -71,7 +71,7 @@
       (case (::kind target-id)
         ;; these instances to be handled on a global (world) level
         :to-world
-        ,   [:to-world]
+        ,   [:to-world (::msg event)]
         ;; these instances to be defined by given system
         :to-system
         ,   [:to-system (::system-id target-id) (::msg event)]
@@ -91,11 +91,25 @@
     [target-id event total-time world object]
     (handle-event target-id event total-time world object))
 
+  ;; helper function
+  (defn resolve-target-id [world target-id]
+    (case (::kind target-id)
+      :to-world
+      ,  world
+      :to-system
+      ,  ((::systems world) (::system-id target-id))
+      :to-entity
+      ,  ((::entities world) (::entity-id target-id))
+      :to-component
+      ,  (let [entity ((::entities world) (::entity-id target-id))]
+           ((::components entity) (::component-id target-id)))))
+
   ;; 3. function which adds re-inserting returned objects
   ;; into world - it always returns an sWorld
   (s/defn do-handle-event :- sWorld
-    [target-id event total-time world object]
-    (call-handle-event target-id event total-time world object)
+    [target-id event total-time world]
+    (let [object (resolve-target-id world target-id)]
+      (call-handle-event target-id event total-time world object))
     ;; TODO - teraz przejrzec i rozpakowac zwrocony obiekt / obiekty
     ;; i uaktualnic world i zwrocic go
     ))

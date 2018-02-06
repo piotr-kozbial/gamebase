@@ -250,7 +250,5 @@
                                 {::ecs/msg ::test-event-return-multi}
                                 0
                                 world2)
-         world3)))
-
-)
+         world3))))
 

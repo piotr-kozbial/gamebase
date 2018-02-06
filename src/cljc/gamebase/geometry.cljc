@@ -1,5 +1,4 @@
-(ns gamebase.geometry
-  (:require [clojure.spec.alpha :as s]))
+(ns gamebase.geometry)
 
 (defn deg
   "Create angle (in \"radians\") from given number of degrees"

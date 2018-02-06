@@ -1,10 +1,13 @@
 (ns gamebase.ecs
   (:require [schema.core :as s :include-macros true]))
 
-;; helpers
+
+;;;;;;;;;;;;;;;;;;;;;; P U B L I C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;; Event targets
+
 (defn s-literal [v]
   (s/pred #(= % v)))
-;; /helpers
 
 (def sTarget
   (s/conditional
@@ -20,6 +23,24 @@
    ,   {::entity-id s/Any
         ::component-key s/Any
         s/Any s/Any}))
+
+(defn to-world []
+  {::kind :to-world})
+
+(defn to-system [system]
+  {::kind :to-system
+   ::system-id (::system-id system)})
+
+(defn to-entity [entity]
+  {::kind :to-entity
+   ::entity-id (::entity-id entity)})
+
+(defn to-component [component]
+  {::kind :to-component
+   ::entity-id (::entity-id component)
+   ::component-id (::component-key component)})
+
+;;;;; Objects
 
 (def sComponent
   {::kind (s-literal :component)
@@ -51,6 +72,10 @@
    #(= (::kind %) :system) sSystem
    #(= (::kind %) :entity) sEntity
    #(= (::kind %) :component) sComponent))
+
+
+;;;;;;;;;;;;;;;;;;;;;; p r i v a t e ;;;;;;;;;;;;;;;;;;;;;;;;;;
+nil
 
 ;; ;;;;; Event handling
 ;; ;; RETURN VALUE may be an updated object or a collection of objects, including world etc.
@@ -86,8 +111,9 @@
   ;; 2. scheme'd function just calling the multimethod
   ;; This is only because schema for a multimethod
   ;; is not supported.
-  (s/defn ^:always-validate call-handle-event :- sObject
-    ;; TODO: also a collection of sObjects
+  (s/defn ^:always-validate call-handle-event :- (s/conditional
+                                                  map? sObject
+                                                  sequential? [sObject])
     [target-id event total-time world object]
     (handle-event target-id event total-time world object))
 
@@ -104,13 +130,32 @@
       ,  (let [entity ((::entities world) (::entity-id target-id))]
            ((::components entity) (::component-id target-id)))))
 
+  ;; helper function
+  (defn insert-object [world object]
+    (case (::kind object)
+      :world
+      ,  object ;; we replace the whole world
+      :system
+      ,  (assoc-in world [::systems (::system-id object)] object)
+      :entity
+      ,  (assoc-in world [::entities (::entity-id object)] object)
+      :component
+      ,  (assoc-in world [::entities (::entity-id object)
+                          ::components (::component-key object)] object)))
+
   ;; 3. function which adds re-inserting returned objects
   ;; into world - it always returns an sWorld
   (s/defn do-handle-event :- sWorld
     [target-id event total-time world]
-    (let [object (resolve-target-id world target-id)]
-      (call-handle-event target-id event total-time world object))
-    ;; TODO - teraz przejrzec i rozpakowac zwrocony obiekt / obiekty
-    ;; i uaktualnic world i zwrocic go
-    ))
+    (let [object (resolve-target-id world target-id)
+          return (call-handle-event target-id event total-time world object)
+          new-objects
+          (if (map? return)
+            [return] ;; single object - pack into vector to make it seqable
+            return ;; otherwise - should be a seqable
+            )]
+      (reduce
+       insert-object
+       world
+       new-objects))))
 

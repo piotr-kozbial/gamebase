@@ -1,6 +1,7 @@
 (ns gamebase.ecs-test
   (:require [clojure.test :refer :all]
             [schema.core :as s :include-macros true]
+            [clojure.pprint :refer [pprint]]
             [gamebase.ecs :as ecs]))
 
 (do ;; data structures
@@ -142,9 +143,114 @@
                                 world1)
            (assoc world1 :a "comp")))))
 
-
-
-;; TODO
 (do ;; event handling : returns
-  ;; TODO
+
+  (def world2
+    {::ecs/kind :world
+     ::ecs/systems
+     {"my system" {::ecs/kind :system
+                   ::ecs/system-id "my system"}}
+     ::ecs/entities
+     {1 {::ecs/kind :entity
+         ::ecs/entity-id 1
+         ::ecs/type ::one-kind
+         ::ecs/components {}}
+      2 {::ecs/kind :entity
+         ::ecs/entity-id 2
+         ::ecs/type ::another-kind
+         ::ecs/components
+         {"comp1" {::ecs/kind :component
+                   ::ecs/type ::component-a
+                   ::ecs/system-id "my system"
+                   ::ecs/entity-id 2
+                   ::ecs/component-key "comp1"}}}}})
+
+  (defmethod ecs/handle-event [:to-system "my system" ::test-event-return-world]
+    [_ _ _ world _]
+    (assoc world :whole :world))
+
+  (defmethod ecs/handle-event [:to-system "my system" ::test-event-return-system]
+    [_ _ _ world system]
+    (assoc system :changed :system))
+
+  (defmethod ecs/handle-event [:to-entity ::one-kind ::test-event-return-entity]
+    [_ _ _ world entity]
+    (assoc entity :modified :entity))
+
+  (defmethod ecs/handle-event [:to-entity ::another-kind ::test-event-return-component]
+    [_ _ _ world entity]
+    (assoc ((::ecs/components entity) "comp1") :mod "component"))
+
+  (deftest return-world
+    (is (= (ecs/do-handle-event {::ecs/kind :to-system
+                                 ::ecs/system-id "my system"}
+                                {::ecs/msg ::test-event-return-world}
+                                0
+                                world2)
+           (assoc world2 :whole :world))))
+
+
+  (deftest return-system
+    (is (= (ecs/do-handle-event {::ecs/kind :to-system
+                                 ::ecs/system-id "my system"}
+                                {::ecs/msg ::test-event-return-system}
+                                0
+                                world2)
+           (assoc-in world2 [::ecs/systems "my system" :changed] :system))))
+
+  (deftest return-entity
+    (is (= (ecs/do-handle-event {::ecs/kind :to-entity
+                                 ::ecs/entity-id 1}
+                                {::ecs/msg ::test-event-return-entity}
+                                0
+                                world2)
+           (assoc-in world2 [::ecs/entities 1 :modified] :entity))))
+
+  (deftest return-component
+    (is (= (ecs/do-handle-event {::ecs/kind :to-entity
+                                 ::ecs/entity-id 2}
+                                {::ecs/msg ::test-event-return-component}
+                                0
+                                world2)
+           (assoc-in world2 [::ecs/entities 2 ::ecs/components "comp1" :mod] "component"))))
+
+  (defmethod ecs/handle-event [:to-entity ::one-kind ::test-event-return-multi]
+    [_ _ _ world entity]
+    [{::ecs/kind :system
+      ::ecs/system-id "my system"
+      :system :modification}
+     (assoc entity :entity "mod")])
+
+  (def world3
+    {::ecs/kind :world
+     ::ecs/systems
+     {"my system" {::ecs/kind :system
+                   ::ecs/system-id "my system"
+                   :system :modification}}
+     ::ecs/entities
+     {1 {::ecs/kind :entity
+         ::ecs/entity-id 1
+         ::ecs/type ::one-kind
+         ::ecs/components {}
+         :entity "mod"}
+      2 {::ecs/kind :entity
+         ::ecs/entity-id 2
+         ::ecs/type ::another-kind
+         ::ecs/components
+         {"comp1" {::ecs/kind :component
+                   ::ecs/type ::component-a
+                   ::ecs/system-id "my system"
+                   ::ecs/entity-id 2
+                   ::ecs/component-key "comp1"}}}}})
+
+
+  (deftest return-multi
+    (is (= (ecs/do-handle-event {::ecs/kind :to-entity
+                                 ::ecs/entity-id 1}
+                                {::ecs/msg ::test-event-return-multi}
+                                0
+                                world2)
+         world3)))
+
 )
+

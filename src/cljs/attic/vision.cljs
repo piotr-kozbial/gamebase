@@ -71,8 +71,8 @@ nil
 
 (defn world-xy-to-tile-xy [geometry [x y]]
   (let [{:keys [tile-width tile-height]} geometry]
-    [(js/floor (/ x tile-width))
-     (js/floor (/ y tile-height))]))
+    [(js/Math.floor (/ x tile-width))
+     (js/Math.floor (/ y tile-height))]))
 
 (defn world-xy-to-scaled-canvas-xy [geometry [x y]]
   ;; we assume that the output will be scaled,
@@ -124,13 +124,13 @@ nil
           ;; we start at x1 rounded up to tile boundary and increment in tile-width steps
           ;; until we pass x2
           (let [x0 (* tile-width (js/ceil (/ x1 tile-width)))
-                xEnd (* tile-width (js/floor (/ x2 tile-width)))
+                xEnd (* tile-width (js/Math.floor (/ x2 tile-width)))
                 a (/ (- y2 y1) (- x2 x1))]
             (for [x (take-while #(< % xEnd) (iterate (partial + tile-width) x0))]
               [(inc x) (+ y1 (* a (- x x1)))]))
           ;; we start at x1 rounded down to tile boundary and decrement in tile-width steps
           ;; until we pass x2
-          (let [x0 (* tile-width (js/floor (/ x1 tile-width)))
+          (let [x0 (* tile-width (js/Math.floor (/ x1 tile-width)))
                 xEnd (* tile-width (js/ceil (/ x2 tile-width)))
                 a (/ (- y2 y1) (- x2 x1))]
             (for [x (take-while #(> % xEnd) (iterate #(- % tile-width) x0))]
@@ -138,11 +138,11 @@ nil
       (when (> (js/abs (- y1 y2)) tile-height)
         (if (< y1 y2)
           (let [y0 (* tile-height (js/ceil (/ y1 tile-height)))
-                yEnd (* tile-height (js/floor (/ y2 tile-height)))
+                yEnd (* tile-height (js/Math.floor (/ y2 tile-height)))
                 a (/ (- x2 x1) (- y2 y1))]
             (for [y (take-while #(< % yEnd) (iterate (partial + tile-height) y0))]
               [(+ x1 (* a (- y y1))) (inc y)]))
-          (let [y0 (* tile-height (js/floor (/ y1 tile-height)))
+          (let [y0 (* tile-height (js/Math.floor (/ y1 tile-height)))
                 yEnd (* tile-height (js/ceil (/ y2 tile-height)))
                 a (/ (- x2 x1) (- y2 y1))]
             (for [y (take-while #(> % yEnd) (iterate #(- % tile-height) y0))]

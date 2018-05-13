@@ -4,12 +4,17 @@
 ;;;;;;;;;;;;;;;;;;;;;; P U B L I C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 nil
 
-;;;;; Event targets
+;;;;; Generic schema utilities
 
-(defn s-literal [v]
+(defn s-literal
+  "schema for a single fixed value"
+  [v]
   (s/pred #(= % v)))
 
+;;;;; Event targets
+
 (def sTarget
+  "Schema for event targets (? then why the generic map?)"
   (s/conditional
    #(= (::kind %) :to-world)
    ,   {s/Any s/Any}
@@ -83,8 +88,9 @@ nil
                         sequential? [sObject]))
 
 ;; Note. It is not possible to assign schema to a multimethod.
-;; Schema will be controlled in the implementation of do-handle-event.
-;; This function, `handle-event` is to be implemented by clients,
+;; Schema will be controlled in the implementation
+;; of do-handle-event.
+;; This method (`handle-event`) is to be implemented by clients,
 ;; but not called directly.
 ;; Client should always call `do-handle-event`.
 (defmulti handle-event
@@ -104,9 +110,12 @@ nil
       :to-component
       ,   [:to-component (::type object) (::msg event)])))
 
-(declare call-handle-event resolve-target-id insert-object) ;; private
+(declare call-handle-event ;; private
+         resolve-target-id ;; private
+         insert-object)    ;; private
 
-;; Event-handling function to be called by clients. Always returns world.
+;; Event-handling function to be called by clients.
+;; Always returns world.
 (s/defn do-handle-event :- sWorld
   [target-id event total-time world]
   (let [object (resolve-target-id world target-id)

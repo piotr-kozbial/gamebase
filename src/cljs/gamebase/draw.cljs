@@ -50,11 +50,11 @@
   (reset-transformation)
   (let [[top-left-x top-left-y visible-width visible-height] (get-top-left)
 
-        h-tile-start (js/floor (/ top-left-x 32))
+        h-tile-start (js/Math.floor (/ top-left-x 32))
         h-tile-count (inc (js/ceil
                            (/ visible-width 32)))
         h-tile-end (+ h-tile-start h-tile-count)
-        v-tile-start (js/floor (/ top-left-y 32))
+        v-tile-start (js/Math.floor (/ top-left-y 32))
         v-tile-count (inc (js/ceil
                            (/ visible-height 32)))
         v-tile-end (+ v-tile-start v-tile-count)

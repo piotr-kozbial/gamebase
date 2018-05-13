@@ -56,7 +56,7 @@
   (fn [] (after-canvas-resize)))
 
 (defn set-scale [scale]
-  (swap! makstycoon.global/app-state assoc :scale scale) ;; TODO - better
+  ;; (swap! makstycoon.global/app-state assoc :scale scale) ;; TODO - better
   (after-canvas-resize))
 
 (defn reset-transformation []

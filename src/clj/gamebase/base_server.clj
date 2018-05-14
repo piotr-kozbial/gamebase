@@ -28,8 +28,12 @@
   )
 
 (defn home-routes [root-page message-handler
-                   exception-handler]
+                   exception-handler dev?]
   (routes
+   (GET "/app.js" _
+        (if dev?
+          (io/input-stream (io/file "dev-target/public/js/compiled/app.js"))
+          (io/input-stream (io/resource "public/js/compiled/app.js"))))
    (GET "/" _
         (-> (if (string? root-page)
               (io/input-stream (io/resource root-page))
@@ -61,7 +65,8 @@
     (or (:message-handler config)
         (fn [msg] {:received msg}))
     (or (:exception-handler config)
-        (fn [req ex] {:error (str ex)})))
+        (fn [req ex] {:error (str ex)}))
+    (:dev? config))
 
 
    {:host (:host config)
@@ -78,4 +83,5 @@
    (or (:message-handler config)
        (fn [msg] {:received msg}))
    (or (:exception-handler config)
-       (fn [req ex] {:error (str ex)}))))
+       (fn [req ex] {:error (str ex)}))
+   (:dev? config)))

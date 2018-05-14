@@ -27,9 +27,9 @@
 
                 :figwheel true
 
-                :compiler {:main makstycoon.core
+                :compiler {;;:main makstycoon.core
                            :asset-path "js/compiled/out"
-                           :output-to "resources/js/compiled/makstycoon.js"
+                           :output-to "resources/js/compiled/gamebase.js"
                            :output-dir "resources/js/compiled/out"
                            :source-map-timestamp true
                            :optimizations :none
@@ -44,8 +44,8 @@
                {:id "min"
                 :source-paths ["src/cljs" "src/cljc"]
                 :jar true
-                :compiler {:main makstycoon.core
-                           :output-to "resources/js/compiled/makstycoon.js"
+                :compiler {;;:main makstycoon.core
+                           :output-to "resources/js/compiled/gamebase.js"
                            :output-dir "target"
                            :source-map-timestamp true
                            :optimizations :advanced

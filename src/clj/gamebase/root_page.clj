@@ -18,15 +18,14 @@
            [:head
             [:meta {:charset "UTF-8"}]
             [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-            [:link {:href "css/style.css" :rel "stylesheet"
+            [:link {:href "public/css/style.css" :rel "stylesheet"
                     :type "text/css"}]]
            [:body {:id "body" :style "width:100%; height:100%"
                    :oncontextmenu "return false;"}
 
             (or custom-html [:div])
-
             [:script {:src "gamebase/p5.js" :type "text/javascript"}]
-            [:script {:src app-js :type "text/javascript"}]
+            [:script {:src "app.js" :type "text/javascript"}]
 
             [:script
              (str "function setup() { " main "(); }\n")

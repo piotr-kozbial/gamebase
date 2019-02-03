@@ -2,7 +2,7 @@
   (:require [clojure.string :as str]
             [clojure.java.io :as io]
             [compojure.core :refer [GET POST routes]]
-            [compojure.route :refer [resources]]
+            [compojure.route :refer [resources files]]
             [ring.util.response :refer [response]]
             [ring.util.request :refer [body-string]]
             [ring.adapter.jetty :refer [run-jetty]]))
@@ -54,7 +54,10 @@
            (catch Throwable ex
              (println ex)
              (pr-str (exception-handler req ex)))))
-   (resources "/" {:root ""})))
+   ;;(resources "/" {:root ""})
+   (files "/" {:root "./public"})
+   
+   ))
 
 
 (defn start-server [config]

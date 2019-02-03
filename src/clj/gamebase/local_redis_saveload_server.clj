@@ -27,7 +27,9 @@
           :message-handler message-handler
           :exception-handler (fn [req ex] {:blad (str ex)}))))
 
-(defn build-handler [config]
+(defn build-handler [config & [prefix]]
+  (reset! PREFIX (or prefix ""))
+
   (bs/build-handler
    (assoc config
           :message-handler message-handler

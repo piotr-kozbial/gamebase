@@ -16,7 +16,8 @@
              :http-port 10555
              :root-page "index.html"
              :message-handler #'message-handler
-             :exception-handler (fn [req ex] {:blad (str ex)})})
+             :exception-handler (fn [req ex] {:blad (str ex)})
+             :files-root "./public"})
 
   (start-server conf)
 
@@ -28,7 +29,8 @@
   )
 
 (defn home-routes [root-page message-handler
-                   exception-handler dev?]
+                   exception-handler dev?
+                   files-root]
   (routes
    (GET "/app.js" _
         (if dev?
@@ -55,7 +57,7 @@
              (println ex)
              (pr-str (exception-handler req ex)))))
    ;;(resources "/" {:root ""})
-   (files "/" {:root "./public"})
+   (files "/" {:root files-root})
    
    ))
 
@@ -69,7 +71,8 @@
         (fn [msg] {:received msg}))
     (or (:exception-handler config)
         (fn [req ex] {:error (str ex)}))
-    (:dev? config))
+    (:dev? config)
+    (:files-root config)
 
 
    {:host (:host config)

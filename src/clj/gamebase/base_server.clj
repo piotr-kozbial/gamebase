@@ -72,7 +72,7 @@
     (or (:exception-handler config)
         (fn [req ex] {:error (str ex)}))
     (:dev? config)
-    (:files-root config)
+    (:files-root config))
 
 
    {:host (:host config)
@@ -90,4 +90,5 @@
        (fn [msg] {:received msg}))
    (or (:exception-handler config)
        (fn [req ex] {:error (str ex)}))
-   (:dev? config)))
+   (:dev? config)
+   (:files-root config)))

@@ -31,6 +31,7 @@
 (defn home-routes [root-page message-handler
                    exception-handler dev?
                    files-root]
+  (println (str "FILES-ROOT=" files-root))
   (routes
    (GET "/app.js" _
         (if dev?
@@ -56,7 +57,7 @@
            (catch Throwable ex
              (println ex)
              (pr-str (exception-handler req ex)))))
-   ;;(resources "/" {:root ""})
+   (resources "/gamebase" {:root "gamebase"})
    (files "/" {:root files-root})
    
    ))
@@ -91,4 +92,4 @@
    (or (:exception-handler config)
        (fn [req ex] {:error (str ex)}))
    (:dev? config)
-   (:files-root config)))
+  (:files-root config)))

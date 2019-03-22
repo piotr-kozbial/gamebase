@@ -21,6 +21,9 @@
 
   :profiles {:uberjar {:aot :all}}
 
+  :hooks [leiningen.cljsbuild]
+
+
   :cljsbuild {:builds
               [{:id "app"
                 :source-paths ["src/cljs" "src/cljc"]

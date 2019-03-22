@@ -9,7 +9,10 @@
    )
   )
 
-(def PREFIX "creatx/")
+(def PREFIX (atom ""))
+
+(defn set-prefix [prefix]
+  (reset! PREFIX prefix))
 
 (declare all-resources-loaded?)
 
@@ -33,9 +36,9 @@
 
 (defmulti start-loading (fn [fname callback] (file-type fname)))
 (defmethod start-loading :img [fname callback]
-  (js/loadImage (str PREFIX fname) callback))
+  (js/loadImage (str @PREFIX fname) callback))
 (defmethod start-loading :tmx [fname callback]
-  (js/loadStrings (str PREFIX fname) callback))
+  (js/loadStrings (str @PREFIX fname) callback))
 
 (defmulti parse-and-store (fn [fname & args] (file-type fname)))
 (defmethod parse-and-store :img [fname img]

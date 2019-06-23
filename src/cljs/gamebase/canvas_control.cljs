@@ -9,6 +9,7 @@
 
 (def s-conf
   {:state-atom s/Any,:state-kvs s/Any
+   (s/optional-key :advance) s/Any
    :draw s/Any
    :overlay-draw s/Any
    :get-canvas-size s/Any
@@ -34,6 +35,10 @@
 
     (s/validate s-conf @conf)
 
+    ;; client advance
+    (when-let [advance (:advance @conf)]
+      (advance))
+
     (let [{:keys [state-atom state-kvs get-canvas-size]} @conf]
       (let [{:keys [scale-factor translation-x translation-y]}
             ,    (get-in @state-atom state-kvs)
@@ -50,15 +55,15 @@
         ;; We keep use the integer translations here as well
         (let [rev-x #(/ (- % t-x) scale-factor)
               rev-y #(/ (- % t-y) (- scale-factor))
-              [wc hc] (get-canvas-size)]
+              [wc hc] (get-canvas-size)
+              client-context {:min-x (int (rev-x 0))
+                              :max-x (int (rev-x wc))
+                              :min-y (int (rev-y hc)) ;; because of negative y scale, hc is min and 0 is max
+                              :max-y (int (rev-y 0))
+                              :mouse-x (int (rev-x js/mouseX))
+                              :mouse-y (int (rev-y js/mouseY))}]
           ;; client draw
-          ((:draw @conf)
-           {:min-x (int (rev-x 0))
-            :max-x (int (rev-x wc))
-            :min-y (int (rev-y hc)) ;; because of negative y scale, hc is min and 0 is max
-            :max-y (int (rev-y 0))
-            :mouse-x (int (rev-x js/mouseX))
-            :mouse-y (int (rev-y js/mouseY))})
+          ((:draw @conf) client-context)
           ;; overlay draw
           (when-let [overlay-draw (:overlay-draw @conf)]
             (js/resetMatrix)

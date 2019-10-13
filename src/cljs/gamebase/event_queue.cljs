@@ -23,7 +23,7 @@
 
 (defn take-event [q]
   (let [all (:set_ q)
-        all-sorted (sort-by ::time all)
+        all-sorted (sort-by #(vector (::time %) (:sq %)) all)
         soonest-event (first all-sorted)
         rest-of-events (rest all-sorted)]
     [soonest-event

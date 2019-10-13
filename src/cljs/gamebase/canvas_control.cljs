@@ -244,7 +244,7 @@
   (events/add-handler
    :canvas-mouse-dragged
    (fn [{:keys [button x y prev-x prev-y]}]
-     (when (= button js/RIGHT)
+     (when true; (= button js/RIGHT)
        (let [{:keys [state-atom state-kvs]} @conf
              dx (- x prev-x)
              dy (- y prev-y)]

@@ -6,7 +6,8 @@
             ))
 
 ;;;;;;;;;;;;;;;;;;;;;; P U B L I C ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-nil
+
+(def ^:dynamic *with-xprint* false)
 
 ;;;;; Generic schema utilities
 
@@ -49,10 +50,15 @@ nil
      (::entity-id entity)
      entity)})
 
-(defn to-component [component]
-  {::kind :to-component
-   ::entity-id (::entity-id component)
-   ::component-id (::component-key component)})
+(defn to-component
+  ([component]
+   {::kind :to-component
+    ::entity-id (::entity-id component)
+    ::component-id (::component-key component)})
+  ([entity-id component-id]
+   {::kind :to-component
+    ::entity-id entity-id
+    ::component-id component-id}))
 
 (defn to [object-or-target-id]
   (if (map? object-or-target-id)
@@ -151,11 +157,15 @@ nil
 ;;   )
 
 (defn mk-component [system-or-id entity-or-id key type]
-  {::kind :component
-   ::system-id (id system-or-id)
-   ::type type
-   ::entity-id (id entity-or-id)
-   ::component-key key})
+  (let [v {::kind :component
+           ::system-id (id system-or-id)
+           ::type type
+           ::entity-id (id entity-or-id)
+           ::component-key key}]
+    (if *with-xprint*
+      (with-meta v
+        {:app.xprint.core/key-order [::kind ::system-id ::type ::entity-id ::component-key]})
+      v)))
 
 ;;;;; Event handling
 
@@ -347,11 +357,14 @@ nil
                         ::components (::component-key object)] object)))
 
 ;; helper function
-(defn remove-entity-by-key[world entity-key]
+(defn remove-entity-by-key [world entity-key]
   (update-in world [::entities] dissoc entity-key))
 
 (defn get-entity-by-key [world entity-key]
   (get-in world [::entities entity-key]))
 
-
+(defn get-entity-by [world entity-or-id]
+  (if (map? entity-or-id)
+    entity-or-id ;; TODO - should check more?
+    (get-entity-by-key world entity-or-id)))
 

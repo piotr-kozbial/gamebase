@@ -3,6 +3,7 @@
 (ns gamebase.geometry
   (:require-macros [gamebase.helpers :refer [examples]]))
 
+(def ^:dynamic *with-xprint* false)
 
 ;;;# Overview
 (do
@@ -395,9 +396,13 @@
 ;;; extending from one point to another:
 
   (defn line-segment [p1 p2]
-    {:path-type :line-segment
-     :p1 p1
-     :p2 p2})
+    (let [v {:path-type :line-segment
+             :p1 p1
+             :p2 p2}]
+      (if *with-xprint*
+        (with-meta v
+          {:app.xprint.core/key-order [:path-type :p1 :p2]})
+        v)))
 
 ;;; TODO !!! - zrobic to, wyliczac full-length, x-factor, y-factor.
 ;;; Potem w funkcjach ponizej uzywac (precomputed path)
@@ -601,6 +606,106 @@
            :center [(+ xc dx) (+ yc dy)]))
 
   )
+
+;;;# Path chains
+(do
+
+;;; A list of paths which is supposed to be continuous (the end of one concides with the
+;;; start of the next. The ordering is as in seq, as given to the constructor `path-chain`.
+;;; (Internally we'll hold it as a vetor).
+
+  (defn path-chain [paths]
+    {:path-type :path-chain
+     :paths (apply vector paths)})
+
+  (defmethod precompute :path-chain [{:keys [paths] :as path}]
+    (let [lengths (into [] (map path-length paths))
+          length (apply + lengths)]
+      (assoc path
+             :lengths lengths
+             :length length)))
+
+  (defmethod path-length :path-chain [path]
+    (:length (precomputed path)))
+
+  (defmethod path-point-at-length :path-chain [path length]
+    (let [{:keys [paths lengths]} (precomputed path)
+          cnt (count paths)]
+      (loop [n 0, length-remaining length]
+        (if (or
+             (<= length-remaining (nth lengths n)) ;; fits in this path
+             (= (inc n) cnt)) ;; last path, no choice
+          (path-point-at-length (nth paths n) length-remaining)
+          (recur (inc n) (- length-remaining (nth lengths n)))))))
+
+  (defmethod angle-at-length :path-chain [path length]
+    (let [{:keys [paths lengths]} (precomputed path)
+          cnt (count paths)]
+      (loop [n 0, length-remaining length]
+        (if (or
+             (<= length-remaining (nth lengths n)) ;; fits in this path
+             (== (inc n) cnt)) ;; last path, no choice
+          (angle-at-length (nth paths n) length-remaining)
+          (recur (inc n) (- length-remaining (nth lengths n)))))))
+
+  (defn path-index-at-length [path-chain length]
+    (let [{:keys [paths lengths]} (precomputed path-chain)
+          cnt (count paths)]
+      (loop [n 0, length-remaining length]
+        (if (or
+             (<= length-remaining (nth lengths n)) ;; fits in this path
+             (= (inc n) cnt)) ;; last path, no choice
+          n
+          (recur (inc n) (- length-remaining (nth lengths n)))))))
+
+  (defn path-at-length [path-chain length]
+    (let [{:keys [paths lengths]} (precomputed path-chain)
+          cnt (count paths)]
+      (loop [n 0, length-remaining length]
+        (if (or
+             (<= length-remaining (nth lengths n)) ;; fits in this path
+             (= (inc n) cnt)) ;; last path, no choice
+          (nth paths n)
+          (recur (inc n) (- length-remaining (nth lengths n)))))))
+
+  (defn length-at-length [path-chain length]
+    (let [{:keys [paths lengths]} (precomputed path-chain)
+          cnt (count paths)]
+      (loop [n 0, length-remaining length]
+        (if (or
+             (<= length-remaining (nth lengths n)) ;; fits in this path
+             (= (inc n) cnt)) ;; last path, no choice
+          length-remaining
+          (recur (inc n) (- length-remaining (nth lengths n)))))))
+
+
+  (defn path-chain-add [{:keys [paths precomputed?] :as path-chain} path]
+    (let [path-chain'(assoc
+                      path-chain
+                      :paths (conj paths path))]
+      (if precomputed?
+        (precompute path-chain')
+        path-chain')))
+
+  (defn path-chain-remove-first [{:keys [paths precomputed?] :as path-chain}]
+    (let [path-chain'(assoc
+                      path-chain
+                      :paths (into [] (rest paths)))]
+      (if precomputed?
+        (precompute path-chain')
+        path-chain')))
+
+  (comment
+    (def p1 (line-segment [1 1] [3 1]))
+    (def p2 (line-segment [3 1] [3 4]))
+    (def p3 (line-segment [3 4] [2 4]))
+    (def ch (path-chain [p1 p2 p3]))
+
+    )
+
+  )
+
+
 
 ;;; TODO - na poczatku (na koncu?) dac jakis "synopsis", pokazujacy struktury danych i funkcje
 ;;; Moze na poczatku - i wtedy to bedzie zdefiniowana funkcja (synopsis), majaca w srodku asserty

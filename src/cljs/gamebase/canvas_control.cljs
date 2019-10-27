@@ -1,9 +1,8 @@
 (ns gamebase.canvas-control
-  (:require
-   [gamebase.events :as events]
-   [gamebase.ecs :as ecs]
-   [gamebase.projection :as proj]
-   [schema.core :as s :include-macros true]))
+  (:require [gamebase.events :as events]
+            [gamebase.ecs :as ecs]
+            [gamebase.projection :as proj]
+            [schema.core :as s :include-macros true]))
 
 (defonce conf (atom nil))
 
@@ -16,15 +15,15 @@
    :get-world-size s/Any})
 
 (defn get-canvas-to-world-converters []
- (when-let [{:keys [state-atom state-kvs get-canvas-size]} @conf]
+  (when-let [{:keys [state-atom state-kvs get-canvas-size]} @conf]
     (let [{:keys [scale-factor translation-x translation-y]}
           ,    (get-in @state-atom state-kvs)
           ;; IMPORTANT!!! We must make translations integers, otherwise
           ;; there will be unwanted artifacts (lines between tiles).
           t-x (int translation-x)
           t-y (int translation-y)]
-       [#(/ (- % t-x) scale-factor)
-        #(/ (- % t-y) (- scale-factor))])))
+      [#(int (/ (- % t-x) scale-factor))
+       #(int (/ (- % t-y) (- scale-factor)))])))
 
 (defn- draw []
   ;; canvas clear and setup

@@ -167,7 +167,7 @@
         ;;; _ (println proj-conf)
         ;; view coords of view center
         [xc yc] (proj/view-coords proj-conf0 (proj/Vc proj-conf0))
-        _ (println [xc yc])
+        ;;_ (println [xc yc])
         ;; translation we have to do to match the above
         tr-x (- xc xw)
         tr-y (- yc yw)]

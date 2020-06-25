@@ -83,10 +83,22 @@
              [[:kafelki 2] [:kafelki 1] [:inny-set 5]]
              [[:kafelki 3] [:ten-zmieniony 10] [:inny-set 5]]]})
 
+;;; ...
+
+    (defn get-layer-height [layer]
+      (count (:data layer)))
+
+    (defn get-layer-width [layer]
+      (count (first (:data layer))))
+
 ;;; Another function will get a tile from layer (very simple):
 
     (defn get-tile-from-layer [layer x y]
-      (((:data layer) y) x))
+      (let [height (get-layer-height layer)
+            width (get-layer-width layer)]
+        (when (and (<= 0 x (dec width))
+                   (<= 0 y (dec height)))
+          (((:data layer) y) x))))
 
     (examples
      (get-tile-from-layer
@@ -99,11 +111,9 @@
      =>
      [:inny-set 55])
 
-    (defn get-layer-width [layer]
-      (count (first (:data layer))))
 
-    (defn get-layer-height [layer]
-      (count (:data layer))))
+
+    )
 
 ;;;## Loading tiled layers from tmx files
   (do
